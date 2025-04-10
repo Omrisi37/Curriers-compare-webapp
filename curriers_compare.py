@@ -5,9 +5,9 @@ def main():
     st.title("Shipping Price Comparison Tool")
     
     # Hardcoded file paths
-    dhl_mapping_path = "data/dhl_mapping.xlsx"
-    fedex_mapping_path = "data/fedex_mapping.xlsx"
-    pricing_table_path = "data/pricing_table.xlsx"
+    dhl_mapping_path = "dhl pricing.xlsx"
+    fedex_mapping_path = "fedex pricing.xlsx"
+    pricing_table_path = "pricing table.xlsx"
     
     try:
         # Load all data files
