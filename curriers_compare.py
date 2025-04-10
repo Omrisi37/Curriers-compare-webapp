@@ -5,9 +5,9 @@ def main():
     st.title("Shipping Price Comparison Tool")
     
     # Hardcoded file paths
-    dhl_mapping_path = "path/to/dhl_mapping.csv"  # Replace with your actual path
-    fedex_mapping_path = "path/to/fedex_mapping.csv"  # Replace with your actual path
-    pricing_table_path = "path/to/pricing_table.csv"  # Replace with your actual path
+    dhl_mapping_path = ""C:\Users\Feldman Sivan\OneDrive\שולחן העבודה\omri\meala projects - omri\meala fedex & dhl compare\dhl pricing.xlsx""  # Replace with your actual path
+    fedex_mapping_path = ""C:\Users\Feldman Sivan\OneDrive\שולחן העבודה\omri\meala projects - omri\meala fedex & dhl compare\fedex pricing.xlsx""  # Replace with your actual path
+    pricing_table_path = ""C:\Users\Feldman Sivan\OneDrive\שולחן העבודה\omri\meala projects - omri\meala fedex & dhl compare\pricing table.xlsx""  # Replace with your actual path
     
     try:
         # Load DHL mapping data
