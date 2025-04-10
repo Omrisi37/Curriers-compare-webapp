@@ -5,7 +5,7 @@ def main():
     st.title("Shipping Price Comparison Tool")
     
     # Hardcoded file paths
-    dhl_mapping_path = ""C:\Users\Feldman Sivan\OneDrive\שולחן העבודה\omri\meala projects - omri\meala fedex & dhl compare\dhl pricing.xlsx""  # Replace with your actual path
+    dhl_mapping_path = "dhl pricing.xlsx"  # Replace with your actual path
     fedex_mapping_path = ""C:\Users\Feldman Sivan\OneDrive\שולחן העבודה\omri\meala projects - omri\meala fedex & dhl compare\fedex pricing.xlsx""  # Replace with your actual path
     pricing_table_path = "pricing table.xlsx"  # Replace with your actual path
     
