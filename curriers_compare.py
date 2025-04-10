@@ -11,15 +11,15 @@ def main():
     
     try:
         # Load DHL mapping data
-        dhl_mapping_df = pd.read_csv(dhl_mapping_path)
+        dhl_mapping_df = pd.read_excel(dhl_mapping_path)
         st.sidebar.success("DHL mapping data loaded successfully")
         
         # Load FedEx mapping data
-        fedex_mapping_df = pd.read_csv(fedex_mapping_path)
+        fedex_mapping_df = pd.read_excel(fedex_mapping_path)
         st.sidebar.success("FedEx mapping data loaded successfully")
         
         # Load pricing table data
-        pricing_table_df = pd.read_csv(pricing_table_path)
+        pricing_table_df = pd.read_excel(pricing_table_path)
         st.sidebar.success("Pricing table data loaded successfully")
         
         # User inputs
