@@ -5,12 +5,16 @@ import streamlit as st
 DHL_FILE_PATH = "dhl pricing 2.xlsx"  # עדכן לנתיב הנכון
 FEDEX_FILE_PATH = "fedex pricing 2.xlsx"  # עדכן לנתיב הנכון
 
-def calculate_price(pricing_df, weight, area):
+def calculate_price(pricing_df, weight, area, is_fedex=False):
     """
     מחשב מחיר לפי משקל ואזור - פונקציה משותפת ל-DHL ו-FedEx
     """
     try:
-        area_col = f"area_{area}"
+        # התאמת שמות העמודות עבור FedEx
+        if is_fedex:
+            area_col = f"Zone {area}"  # לדוגמה: Zone CE
+        else:
+            area_col = f"area_{area}"  # לדוגמה: area_1
         
         if area_col not in pricing_df.columns:
             st.error(f"עמודה {area_col} לא נמצאה בטבלת המחירים")
@@ -77,7 +81,7 @@ def main():
             
             # חישוב מחירים
             dhl_price = calculate_price(dhl_pricing, weight, dhl_area)
-            fedex_price = calculate_price(fedex_pricing, weight, fedex_area)
+            fedex_price = calculate_price(fedex_pricing, weight, fedex_area, is_fedex=True)
             
             # הצגת תוצאות
             st.subheader("📊 תוצאות השוואה")
