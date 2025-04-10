@@ -7,7 +7,7 @@ def main():
     # Hardcoded file paths
     dhl_mapping_path = ""C:\Users\Feldman Sivan\OneDrive\שולחן העבודה\omri\meala projects - omri\meala fedex & dhl compare\dhl pricing.xlsx""  # Replace with your actual path
     fedex_mapping_path = ""C:\Users\Feldman Sivan\OneDrive\שולחן העבודה\omri\meala projects - omri\meala fedex & dhl compare\fedex pricing.xlsx""  # Replace with your actual path
-    pricing_table_path = ""C:\Users\Feldman Sivan\OneDrive\שולחן העבודה\omri\meala projects - omri\meala fedex & dhl compare\pricing table.xlsx""  # Replace with your actual path
+    pricing_table_path = "pricing table.xlsx"  # Replace with your actual path
     
     try:
         # Load DHL mapping data
