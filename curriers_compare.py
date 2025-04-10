@@ -19,29 +19,33 @@ def main():
         st.sidebar.success("FedEx mapping data loaded successfully")
         st.sidebar.success("Pricing table data loaded successfully")
         
-        # Normalize country names in mapping files (strip spaces, ensure consistency)
-        dhl_mapping_df.iloc[:, 0] = dhl_mapping_df.iloc[:, 0].str.strip()
-        fedex_mapping_df.iloc[:, 0] = fedex_mapping_df.iloc[:, 0].str.strip()
+       # Create dictionaries for easy lookup
+        # For DHL: Map from "Country (Code)" to area number
+        dhl_areas = {country: int(area) for country, area in zip(dhl_mapping_df.iloc[:, 0], dhl_mapping_df.iloc[:, 1])}
         
-        # Get list of unique countries from DHL mapping
-        countries = sorted(dhl_mapping_df.iloc[:, 0].unique())
+        # Create a version of country names without codes for FedEx mapping
+        country_map = {}
+        for full_name in dhl_mapping_df.iloc[:, 0]:
+            if "(" in full_name and ")" in full_name:
+                # Extract the country name without the code
+                simple_name = full_name.split(" (")[0].strip()
+                country_map[full_name] = simple_name
         
         # User inputs
-        selected_country = st.selectbox("Select Country", countries)
-        weight = st.number_input("Enter Weight (kg)", min_value=0.1, value=15.0, step=0.1)
+        selected_country = st.selectbox("Select Country", sorted(dhl_areas.keys()))
+        weight = st.number_input("Enter Weight (kg)", min_value=0.1, value=5.0, step=0.1)
         
         if st.button("Compare Prices"):
-            # Find area codes for DHL and FedEx
-            dhl_row = dhl_mapping_df[dhl_mapping_df.iloc[:, 0] == selected_country]
-            fedex_row = fedex_mapping_df[fedex_mapping_df.iloc[:, 0] == selected_country]
+            # Get DHL area
+            dhl_area = dhl_areas.get(selected_country)
             
-            if not dhl_row.empty and not fedex_row.empty:
-                # Extract area numbers
-                dhl_area = int(dhl_row.iloc[0, 1])  # Second column contains DHL area numbers
-                fedex_area = int(fedex_row.iloc[0, 1])  # Second column contains FedEx area numbers
-                
-                # Debugging: Show matched areas
-                st.info(f"DHL Area: {dhl_area}, FedEx Area: {fedex_area}")
+            # For FedEx, try to find the corresponding country without code
+            simple_country_name = country_map.get(selected_country, selected_country)
+            fedex_row = fedex_mapping_df[fedex_mapping_df.iloc[:, 0] == simple_country_name]
+            
+            if dhl_area is not None and not fedex_row.empty:
+                # Get FedEx area
+                fedex_area = int(fedex_row.iloc[0, 1])
                 
                 # Find closest weight in pricing table
                 weights_list = pricing_table_df.iloc[:, 0].tolist()
@@ -49,12 +53,12 @@ def main():
                 weight_row = pricing_table_df[pricing_table_df.iloc[:, 0] == closest_weight]
                 
                 if not weight_row.empty:
-                    # Construct column names for pricing table lookup
+                    # Get column names for pricing
                     dhl_col = f"AREA{dhl_area} DHL"
                     fedex_col = f"AREA{fedex_area} FEDEX"
                     
                     if dhl_col in pricing_table_df.columns and fedex_col in pricing_table_df.columns:
-                        # Get prices from pricing table
+                        # Get prices
                         dhl_price = float(weight_row[dhl_col].values[0])
                         fedex_price = float(weight_row[fedex_col].values[0])
                         
@@ -72,23 +76,18 @@ def main():
                         st.write(f"Weight: {closest_weight}kg")
                         st.dataframe(comparison_df)
                         
-                        # Highlight cheaper courier
+                        # Show which is cheaper
                         cheaper_courier = "DHL" if dhl_price < fedex_price else "FEDEX"
                         price_diff = abs(dhl_price - fedex_price)
+                        savings_percent = (price_diff / max(dhl_price, fedex_price)) * 100
                         
-                        st.success(f"**{cheaper_courier}** is cheaper by **${price_diff:.2f}**")
+                        st.success(f"**{cheaper_courier}** is cheaper by **${price_diff:.2f}** ({savings_percent:.1f}%)")
                     else:
-                        st.error(f"Column names not found: {dhl_col} or {fedex_col}")
-                        st.write("Available columns:", pricing_table_df.columns.tolist())
+                        st.error(f"Price columns not found in pricing table.")
                 else:
                     st.error(f"Weight {weight}kg not found in pricing table.")
             else:
-                # This is where your error is occurring
                 st.error(f"Area codes not found for country: {selected_country}.")
-                
-                # Add debugging to see what's in the mapping files
-                st.write("First 10 countries in DHL mapping:", dhl_mapping_df.iloc[:10, :])
-                st.write("First 10 countries in FedEx mapping:", fedex_mapping_df.iloc[:10, :])
     
     except Exception as e:
         st.error(f"An error occurred: {e}")
