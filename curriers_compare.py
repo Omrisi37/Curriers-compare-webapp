@@ -5,32 +5,50 @@ import streamlit as st
 DHL_FILE_PATH = "dhl pricing 2.xlsx"  # עדכן לנתיב הנכון
 FEDEX_FILE_PATH = "fedex pricing 2.xlsx"  # עדכן לנתיב הנכון
 
-def calculate_price(pricing_df, weight, area, is_fedex=False):
-    """
-    מחשב מחיר לפי משקל ואזור - פונקציה משותפת ל-DHL ו-FedEx
-    """
+def calculate_dhl_price(pricing_df, weight, area_num):
+    """מחשב מחיר DHL לפי משקל ומספר אזור"""
     try:
-        # התאמת שמות העמודות עבור FedEx
-        if is_fedex:
-            area_col = f"Zone {area}"  # לדוגמה: Zone CE
-        else:
-            area_col = f"area_{area}"  # לדוגמה: area_1
+        # DHL משתמש באזורים מספריים (1-6)
+        column_name = f"area_{area_num}"
         
-        if area_col not in pricing_df.columns:
-            st.error(f"עמודה {area_col} לא נמצאה בטבלת המחירים")
+        if column_name not in pricing_df.columns:
+            st.error(f"שגיאת DHL: עמודה {column_name} לא נמצאה")
             return 0
         
-        # מציאת המשקל הקרוב ביותר בטבלה
-        weights = pricing_df["Weight (kg)"].tolist()
-        closest_weight = min(weights, key=lambda x: abs(float(x) - weight))
+        # מציאת המשקל הקרוב ביותר
+        weights = pricing_df["Weight (kg)"].astype(float).tolist()
+        closest_weight = min(weights, key=lambda x: abs(x - weight))
         
         # קבלת המחיר המתאים
-        price = float(pricing_df[pricing_df["Weight (kg)"] == closest_weight][area_col].values[0])
+        price = float(pricing_df[pricing_df["Weight (kg)"] == closest_weight][column_name].values[0])
         
         return price
         
     except Exception as e:
-        st.error(f"שגיאה בחישוב המחיר: {str(e)}")
+        st.error(f"שגיאת DHL: {str(e)}")
+        return 0
+
+def calculate_fedex_price(pricing_df, weight, zone_code):
+    """מחשב מחיר FedEx לפי משקל וקוד אזור"""
+    try:
+        # FedEx משתמש בקודי אזור בפורמט Zone XX
+        column_name = f"Zone {zone_code}"
+        
+        if column_name not in pricing_df.columns:
+            st.error(f"שגיאת FedEx: עמודה {column_name} לא נמצאה")
+            return 0
+        
+        # מציאת המשקל הקרוב ביותר
+        weights = pricing_df["Weight (kg)"].astype(float).tolist()
+        closest_weight = min(weights, key=lambda x: abs(x - weight))
+        
+        # קבלת המחיר המתאים
+        price = float(pricing_df[pricing_df["Weight (kg)"] == closest_weight][column_name].values[0])
+        
+        return price
+    
+    except Exception as e:
+        st.error(f"שגיאת FedEx: {str(e)}")
         return 0
 
 def main():
@@ -62,6 +80,7 @@ def main():
             if "(" in country and ")" in country:
                 country_name = country.split(" (")[0].strip()
             
+            # חיפוש בקובץ המיפוי של FedEx
             fedex_row = fedex_mapping[fedex_mapping.iloc[:,0] == country_name]
             
             if dhl_row.empty:
@@ -69,19 +88,18 @@ def main():
                 return
                 
             if fedex_row.empty:
-                st.error(f"לא נמצא מיפוי FedEx למדינה: {country_name}")
-                return
+                st.warning(f"לא נמצא מיפוי FedEx למדינה: {country_name}. מציג רק מחיר DHL.")
             
             # קבלת אזורי המחיר
             dhl_area = dhl_row.iloc[0,1]
-            fedex_area = fedex_row.iloc[0,1]
+            fedex_area = fedex_row.iloc[0,1] if not fedex_row.empty else None
             
             if debug_mode:
                 st.sidebar.write(f"DHL אזור: {dhl_area}, FedEx אזור: {fedex_area}")
             
             # חישוב מחירים
-            dhl_price = calculate_price(dhl_pricing, weight, dhl_area)
-            fedex_price = calculate_price(fedex_pricing, weight, fedex_area, is_fedex=True)
+            dhl_price = calculate_dhl_price(dhl_pricing, weight, dhl_area)
+            fedex_price = calculate_fedex_price(fedex_pricing, weight, fedex_area) if fedex_area else 0
             
             # הצגת תוצאות
             st.subheader("📊 תוצאות השוואה")
@@ -103,8 +121,11 @@ def main():
                     price_diff = dhl_price - fedex_price
                     max_price = dhl_price
                 
-                savings = (price_diff / max_price) * 100
-                st.success(f"✅ {cheaper} זולה יותר ב-${price_diff:.2f} ({savings:.1f}%)")
+                if max_price > 0:  # מניעת חלוקה באפס
+                    savings = (price_diff / max_price) * 100
+                    st.success(f"✅ {cheaper} זולה יותר ב-${price_diff:.2f} ({savings:.1f}%)")
+                else:
+                    st.success(f"✅ {cheaper} זולה יותר ב-${price_diff:.2f}")
             elif dhl_price > 0:
                 st.success(f"✅ רק DHL מציע שירות למדינה זו במחיר ${dhl_price:.2f}")
             elif fedex_price > 0:
