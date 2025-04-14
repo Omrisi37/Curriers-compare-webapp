@@ -2,8 +2,8 @@ import pandas as pd
 import streamlit as st
 
 # הגדרת נתיבים קבועים לקבצים
-DHL_FILE_PATH = "dhl pricing 2.xlsx"  # עדכן לנתיב הנכון
-FEDEX_FILE_PATH = "fedex pricing 2.xlsx"  # עדכן לנתיב הנכון
+DHL_FILE_PATH = "dhl pricing 3.xlsx"  # עדכן לנתיב הנכון
+FEDEX_FILE_PATH = "fedex pricing 3.xlsx"  # עדכן לנתיב הנכון
 
 def calculate_dhl_price(pricing_df, weight, area_num):
     """מחשב מחיר DHL לפי משקל ומספר אזור"""
